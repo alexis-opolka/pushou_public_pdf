@@ -1,18 +1,21 @@
-# NuShell in not a nutshell
+# Mises à l'épreuve de NuShell 
 
-Quelques articles paru dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire cet outil.
-Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, récent et dans l'air du temps. 
+Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire cet outil.
+
+Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps. 
 NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
 
 - "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet.
 - les pipelines, les outputs sous forme de tables permettent de manipuler lignes et colonnes.
 - les formats d'échanges comme json permettent à nushell de communiquer avec de nombreux outils.
 
-J'ai mis à l'épreuve NuShell (pas que lui d'ailleurs mais moi aussi) pour voir si l'outil me permettait un petit incrément de valeur. 
+J'ai mis à l'épreuve NuShell (pas que lui d'ailleurs mais moi aussi) pour voir si l'outil me permettait avec un niveau débutant me permettait de travailler.  
+
+
+Voyons des exemples:
 ## Exemple d'utilisation de NuShell pour afficher dynamiquement son calendrie
 
-Voyons un exemple:
-L'université planifie mon travail au travers d'un calendrier au format ical et nushell est capable de lire et parser un calendrier au format ical.
+L'université planifie mon travail au travers d'un calendrier au format ical, accessible via internet (pplication ADE) et nushell est capable de lire et parser un calendrier au format ical. L'idée est simple c'est afficher mon calendrier dans mon CLI via NewShell pour sélectionner des évènements , les modifier ou les extraire. 
 
 ```powershell
 /home/pouchou/ownCloud/dev/nushell〉$moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                                
