@@ -1,19 +1,19 @@
 # Mises à l'épreuve de NuShell 
 
-Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire cet outil.
+Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire de cet outil.
 
-Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps. 
+Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps (impressionnant le nombre d'outils écrit en Rust actuellement). 
 NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
 
-- "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet.
-- les pipelines, les outputs sous forme de tables permettent de manipuler lignes et colonnes.
-- les formats d'échanges comme json permettent à nushell de communiquer avec de nombreux outils.
+- Des instructions comme "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet pour les afficher sous forme de tables.
+- les pipelines, les outputs sous forme de tables permettent de manipuler lignes et colonnes de ces tables.
+- les formats d'échanges comme json permettent à nushell de communiquer avec de nombreux outils ou de sauvegarder par exemple dans un format csv lisible par un tableur.
 
-J'ai mis à l'épreuve NuShell (pas que lui d'ailleurs mais moi aussi) pour voir si l'outil me permettait avec un niveau débutant me permettait de travailler.  
+J'ai mis à l'épreuve NuShell (pas que lui d'ailleurs mais moi aussi) pour voir si l'outil me permettait avec un niveau débutant me permettait de travailler et d'apporter un peu de valeur à mon environnement de travail.
 
 
-Voyons des exemples:
-## Exemple d'utilisation de NuShell pour afficher dynamiquement son calendrie
+Voyons des exemples...
+## Exemple d'utilisation de NuShell pour afficher dynamiquement son calendrier
 
 L'université planifie mon travail au travers d'un calendrier au format ical, accessible via internet (pplication ADE) et nushell est capable de lire et parser un calendrier au format ical. L'idée est simple c'est afficher mon calendrier dans mon CLI via NewShell pour sélectionner des évènements , les modifier ou les extraire. 
 
