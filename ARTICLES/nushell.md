@@ -23,7 +23,7 @@ L'idée est simple:  c'est d'afficher mon calendrier dans mon CLI via NewShell p
 Le résultat à obtenir est le suivant (je le reconnais je triche...):
 
 ```bash
-/home/pouchou/ownCloud/dev/nushell〉$moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                               
+$moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                               
 ╭───┬──────────────────────────────────────────────┬──────────────────────────────────────────────┬───────────────────────────────┬────────────┬───────────────────────────────────────────────────────────────────────────────────────╮
 │ # │                   DTSTART                    │                    DTEND                     │            SUMMARY            │  LOCATION  │                                      DESCRIPTION                                      │
 ├───┼──────────────────────────────────────────────┼──────────────────────────────────────────────┼───────────────────────────────┼────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
@@ -39,7 +39,7 @@ mon calendrier sera un objet table dont les colonnes sont les suivantes:
 
 ```bash
 
-/home/pouchou/ownCloud/dev/nushell〉$moncal |columns                                                                                                                                                                                                                    11/06/2022 12:52:35
+$moncal |columns                                                                                                                                                                                                                    11/06/2022 12:52:35
 ╭───┬─────────────╮
 │ 0 │ DTSTART     │
 │ 1 │ DTEND       │
@@ -52,16 +52,17 @@ mon calendrier sera un objet table dont les colonnes sont les suivantes:
 
 ## Voyons comment maintenant obtenir cette table: 
 
-Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas parser le résultat directement. L'erreur renvoyée n'est pas "parlante". Après de nombreux essais il s'avère que c'est La présence de multi-lignes dans la description de l'évènement qui en en est la cause.et le script Python suivant permet de générer un fichier au format ics exploitable par NuShell.
+Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas parser le résultat directement. L'erreur renvoyée n'est pas "parlante". Après de nombreux essais il s'avère que c'est La présence de multi-lignes dans la description de l'évènement qui en en est la cause.
+Le script Python suivant permet de générer un fichier au format ics exploitable par NuShell.
 
 ```Python
 # (version Python >= 3.10 requise )
 
-fichier='./monics.ics'
+fichier: str ='./monics.ics'
 
 with open(fichier) as f:
 
-    def nettoieLigne(line,next_intitule):
+    def nettoieLigne(line: str,next_intitule str) -> str:
         next_line = next(f)
         if next_intitule == 'CREATED':
             next_line = next(f)
@@ -92,6 +93,7 @@ with open(fichier) as f:
                   print(line)
 
 ```
+
 Recommençons:
 
 ```shell
@@ -105,7 +107,7 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics             
 ```
 
 Cette fois ci le chargement des données a bien été effectué, c'est la colonne **events** qui nous intéresse.
-Nouvelle déception: un essais avec table --expand ne permet pas de voir ce qu'elle contient.
+Déception ! L'instruction "**table --expand**" ne permet pas de voir ce qu'elle contient.
 
 ```shell
 /home/pouchou/ownCloud/dev/nushell〉fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|get events|table -e
@@ -177,12 +179,13 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
         "alarms": []
       }
 ```
+
 C'est probablement l'encapsulation dans des arrays json qui ne nous permet pas une lecture directe.
 
 On va extraire avec jq les données qui nous intéresse (properties) et les "piper" vers NuShell:
 
 ```bash
-/home/pouchou/ownCloud/dev/nushell〉fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
+fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
 '|from json
 ╭───┬─────────────────┬────────────────╮
 │ # │   properties    │     alarms     │
@@ -239,10 +242,10 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
 ╰─────┴───────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────┴────────
 ```
 C'est mieux mais ce n'est toujours pas exploitable.
-Avec le "**get properties**" on obtient une sortie de type "**list**". 
+Avec le "**get properties**" on obtient une sortie de type "**list**". Cette information est obtenue à l'aide de l'instruction **describe** qui se révèle très utile. 
 
 ```bash
-/home/pouchou/ownCloud/dev/nushell〉fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
+fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
 '|from json|get properties |describe
 list<table<name: string, value: string, params: nothing>>
 ```
@@ -250,7 +253,8 @@ list<table<name: string, value: string, params: nothing>>
 Un coup d'oeil à la documentation nous indique la voie à suivre:
 
 ```bash
-/home/pouchou/ownCloud/dev/nushell〉help each                                                                        11/06/2022 02:48:55
+help each                                                                        11/06/2022 02:48:55
+
 Search terms: for, loop, iterate
 
 Usage:
@@ -313,7 +317,8 @@ ION': $it.4.value ,'DESCRIPTION':$it.5.value,'CREATED':$it.6.value,'LAST-MODIFIE
 ```
 
 Toutes les colonnes ne sont pas intéressantes, la date n'est pas dans un format lisible, le tri doit être fait sur la date de départ de l'évènement. 
-On re-travaille donc la sortie :
+
+On re-travaille donc notre sortie :
 
 - Par un tri avec l'instruction **sort-by** sur la colonne DTSTART.
 - Par un "cast" de la date via l'instruction **datetime** (l'heure est UTC, il faut donc décaler via une option -o +1).
@@ -362,6 +367,7 @@ ND {|it| $it.DTEND|into datetime -o +1  |to text}|reject DTSTAMP CREATED LAST-MO
 ╰────┴───────────────────────────┴───────────────────────────┴───────────────────────────┴───────────────────┴──────────────────────────╯
 ```
 
+On y est !
 Le mode "one liner" c'est bien mais créer un script NuShell est peut être judicieux:
 
 ```bash
@@ -419,6 +425,7 @@ $moncal|to csv
 
 Un point pour NuShell (et pour moi aussi car ce fût pas si simple) ! 
 
+On va maintenant voir comment avec NuShell on peut interagir avec les données de notre OS Linux.
 ## NuShell pour extraire des données systèmes et réseau de mon hôte
 
 NuShell dispose de primitives pour extraire des données de l'OS sous-jacent.
@@ -438,10 +445,10 @@ ls ~/Téléchargements/ | where size >  500Mib                                  
 ╰───┴────────────────────────────────────────────────────────────────────────────────────┴──────┴───────────┴───────────────╯
 ```
 
-Mais NuShell est jeune et toutes les commandes d'un shell comme bash ne peuvent pas être ré-écrites.
+Mais NuShell est jeune et toutes les commandes d'un shell comme bash ne peuvent pas être ré-écrites...
 Il est donc intéressant de "nourrir" NuShell avec des données issues d'applications capable de produire des données dans un format d'échange universel comme **json**.
 
-Un autre exemple orienté réseaux (**js** transforme la sortie de commandes **bash** en **json**):
+C'est le cas ici avec un autre exemple orienté réseaux (**js** transforme la sortie de commandes **bash** en **json**):
 
 ```bash
 ss -tunlp|jc --ss|from json|sort-by -n local_port |where ($it.local_port | into decimal) < 1024
@@ -491,9 +498,10 @@ ss -tunlp|jc --ss|from json|sort-by -n local_port |where ($it.local_port | into 
 ```
 
 
-Il existe un logiciel qui fournit des tonnes de données systèmes, réseaux et sécurité au format json : c'est **osquery**.
-Il faut l'installer mais le jeu en vaut la chandelle (même sans NewShell). Il est lui aussi orienté "tables" mais l'interrogation est orientée **SQL**.
+Il existe un logiciel qui fournit des "tonnes" de données systèmes, réseaux et sécurité au format json : c'est **osquery**.
+Il faut l'installer mais le jeu en vaut la chandelle (même sans NewShell). Il est lui aussi orienté "tables" mais l'interrogation de ses données est orientée **SQL**.
 
+Regardons si on peut transmettre les données de osquery à newshell:
 
 ```bash
 osqueryi "select * FROM users;" --json|from json                                 11/06/2022 03:45:45
@@ -527,31 +535,34 @@ osqueryi "select * FROM users;" --json|from json                                
 │    │ Resolver,,,        │ ve                 │       │            │                   │       │            │                   │      │
 ...
 ```
+Ca fonctionne vite et bien !
 
-Un autre exemple avec la table docker_images.
+Un autre exemple ici avec la table docker_images.
 ```bash
 osqueryi "select * FROM docker_images;" --json|from json|update size_bytes {|it| $it.size_bytes |into
  filesize} |sort-by  size_bytes|get size_bytes |reduce -n {|it, acc| $acc.item + $it.item }
 62.9 GiB
 ```
 
-Le nombre de tables osquery est impressionnant il ya surement des possiblilité intéressantes (un jour je regarderais les "yara rules"...).
+Le nombre de tables osquery est impressionnant il y a surement des possiblilité intéressantes (un jour je regarderais les "yara rules"...).
 
 ## Conclusion : affaire à suivre
 
+
 Tout n'est pas parfait commme le parsing de json qui est moins tolérant que celui réalisé par **jq**. 
-Essayez aussi avec "journalctl -o json| from json" pour vous en convaincre. **jq** le "parse" mais NuShell remonte une erreur. C'est surement la faute de systemctl... mais jq s'en accomode.
+Essayez aussi avec "journalctl -o json| from json" pour vous en convaincre. **jq** le "parse" mais NuShell remonte une erreur. C'est surement la faute de systemctl... mais "jq" s'en accomode.
 
-La remontée des erreurs sur le parsing du fichier ical mériterait d'être précise.
+La remontée des erreurs sur le parsing du fichier ical mériterait d'être précise... 
 
-La documentation est utile et efficace masi il y a peu de "posts" encore sur NuShell et donc il faut chercher ... un peu plus longtemps.  
+La documentation est utile et efficace mais il y a peu de "posts" encore sur NuShell et donc il faut chercher parfois longtemps ...   
 
 Les idées portées par **NuShell** sont prometteuses et il manque un **powershell** natif à Linux.  
 Je ne sais pas trop si il peut remplacer/suppléer un outil Python comme **pandas** ou  le shell **bash** mais il est adapté à des usages récents mettant en jeu des formats comme json, yaml ou même xml. Je le trouve plutôt intéressant pour un ingénieur "data" mais ce n'est pas un avis étayé. 
+
 Je ne suis pas (encore) prêt à laisser zsh ou Python mais c'est une évolution à suivre comme celle du terminal *Alacritty", du multiplexeur "Zelllij" que j'utilise depuis peu et qui ont été développés en **Rust**.
 
 
-J'ai crée une "cheatsheet" **NAVI** ici: [https://github.com/pushou/navi-cheats/blob/main/nushell.cheat]. Si **fzf** fonctionne sous NuShell (je suis un grand fan de NAVI).
+J'ai crée une "cheatsheet" **NAVI** ici: [https://github.com/pushou/navi-cheats/blob/main/nushell.cheat]. Si **fzf** fonctionne d'office sous NuShell ce n'est pas le cas de NAVI (je suis un grand fan de NAVI).
 
 Les articles de Benoit Benedetti qui m'ont mis le pied à l'étrier:
 
@@ -559,7 +570,8 @@ Les articles de Benoit Benedetti qui m'ont mis le pied à l'étrier:
 - "Travaillez avec vos propres données structurées à l’aide de Nushell" Linux Pratique HS Numéro 55 octobre 2022.
 - "Nushell : un shell en Rust qui décape" Linux Pratique Numéro 133 septembre 2022.
 
-mais il faut être abonné pour y accéder.
+mais il faut être abonné pour y accéder...
+Le site de NuShell est ici: [https://www.nushell.sh/].
 
 
 
