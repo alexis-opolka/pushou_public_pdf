@@ -1,6 +1,6 @@
 # Mise en pratique de NuShell 
 
-Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire de cet outil.
+Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peut faire de cet outil.
 
 Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps (c'est impressionnant le nombre d'outils écrit en Rust actuellement non ?). 
 NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
@@ -501,7 +501,7 @@ ss -tunlp|jc --ss|from json|sort-by -n local_port |where ($it.local_port | into 
 Il existe un logiciel qui fournit des "tonnes" de données systèmes, réseaux et sécurité au format json : c'est **osquery**.
 Il faut l'installer mais le jeu en vaut la chandelle (même sans NewShell). Il est lui aussi orienté "tables" mais l'interrogation de ses données est orientée **SQL**.
 
-Regardons si on peut transmettre les données de osquery à newshell:
+Regardons si on peut transmettre les données de osquery à NuShell:
 
 ```bash
 osqueryi "select * FROM users;" --json|from json                                 11/06/2022 03:45:45
