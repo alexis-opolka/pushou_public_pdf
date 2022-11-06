@@ -1,4 +1,4 @@
-# Mises à l'épreuve de NuShell 
+# Mise en pratique de NuShell 
 
 Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire de cet outil.
 
