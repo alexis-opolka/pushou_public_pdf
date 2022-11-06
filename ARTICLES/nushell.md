@@ -8,10 +8,11 @@ NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais i
 - les pipelines, les outputs sous forme de tables permettent de manipuler lignes et colonnes.
 - les formats d'échanges comme json permettent à nushell de communiquer avec de nombreux outils.
 
+
 Voyons un exemple:
 L'université planifie mon travail au travers d'un calendrier au format ical et nushell est capable de lire et parser un calendrier au format ical.
 
-```
+```powershell
 /home/pouchou/ownCloud/dev/nushell〉$moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                                
 ╭───┬──────────────────────────────────────────────┬──────────────────────────────────────────────┬───────────────────────────────┬────────────┬───────────────────────────────────────────────────────────────────────────────────────╮
 │ # │                   DTSTART                    │                    DTEND                     │            SUMMARY            │  LOCATION  │                                      DESCRIPTION                                      │
@@ -24,5 +25,18 @@ L'université planifie mon travail au travers d'un calendrier au format ical et 
 ╰───┴──────────────────────────────────────────────┴──────────────────────────────────────────────┴───────────────────────────────┴────────────┴───────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
+mon cal est un objet table dont les colonnes sont les suivantes:
+
+```powershell
+
+/home/pouchou/ownCloud/dev/nushell〉$moncal |columns                                                                                                                                                                                                                    11/06/2022 12:52:35
+╭───┬─────────────╮
+│ 0 │ DTSTART     │
+│ 1 │ DTEND       │
+│ 2 │ SUMMARY     │
+│ 3 │ LOCATION    │
+│ 4 │ DESCRIPTION │
+╰───┴─────────────╯
+```
 
 
