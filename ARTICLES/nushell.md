@@ -1,14 +1,17 @@
 # NuShell in not a nutshell
 
 Quelques articles paru dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire cet outil.
-Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust. 
-NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data":
+Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, récent et dans l'air du temps. 
+NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
 
-- "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet
- - les pipeline, les output sous forme de table permettent de manipuler lignes et colonnes
- - les formats d'échanges comme json:
+- "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet.
+- les pipelines, les outputs sous forme de tables permettent de manipuler lignes et colonnes.
+- les formats d'échanges comme json permettent à nushell de communiquer avec de nombreux outils.
 
-```s
+Voyons un exemple:
+L'université planifie mon travail au travers d'un calendrier au format ical et nushell est capable de lire et parser un calendrier au format ical.
+
+```
 /home/pouchou/ownCloud/dev/nushell〉$moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                                
 ╭───┬──────────────────────────────────────────────┬──────────────────────────────────────────────┬───────────────────────────────┬────────────┬───────────────────────────────────────────────────────────────────────────────────────╮
 │ # │                   DTSTART                    │                    DTEND                     │            SUMMARY            │  LOCATION  │                                      DESCRIPTION                                      │
