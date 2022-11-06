@@ -6,8 +6,8 @@ Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent
 NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
 
 - Des instructions comme "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet pour les afficher sous forme de tables.
-- Les pipelines, les outputs sous forme de tables permettent de manipuler les données structurées en lignes et colonnes .
-- Les formats d'échanges comme json permettent à NuShell de communiquer avec de nombreux outils 
+- Les pipelines, les outputs sous forme de tables permettent de manipuler les données structurées en lignes et colonnes.
+- Les formats d'échanges comme json permettent à NuShell de communiquer avec de nombreux outils.
 - La lecture et l'écriture de fichiers dans des formats usuels (csv, json, odt...) fait de NuShell un outil pivot pour traiter des données.
 
 J'ai mis à l'épreuve NuShell (en fait c'est surtout moi qui suit à l'épreuve de sortir de Python) pour voir si l'outil avec mon niveau débutant me permettait de travailler et d'apporter un peu de valeur à mon environnement de travail.
