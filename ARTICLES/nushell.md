@@ -1,6 +1,6 @@
 # Mise en pratique de NuShell 
 
-Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peut faire de cet outil.
+Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que je pouvais faire de cet outil.
 
 Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps (c'est impressionnant le nombre d'outils écrit en Rust actuellement non ?). 
 NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
