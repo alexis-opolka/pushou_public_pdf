@@ -2,20 +2,20 @@
 
 Quelques articles parus dans linux-pratique de Benoît Benedetti sur NuShell m'ont donné envie de voir ce que peux faire de cet outil.
 
-Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps (impressionnant le nombre d'outils écrit en Rust actuellement). 
+Pour ceux qui ne le savent pas NuShell est un shell écrit en Rust, donc récent et dans l'air du temps (c'est impressionnant le nombre d'outils écrit en Rust actuellement non ?). 
 NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais il est aussi orienté "data" :
 
 - Des instructions comme "open" ou "fetch" vous permettent d'ouvrir des fichiers en local ou depuis internet pour les afficher sous forme de tables.
 - les pipelines, les outputs sous forme de tables permettent de manipuler lignes et colonnes de ces tables.
 - les formats d'échanges comme json permettent à nushell de communiquer avec de nombreux outils ou de sauvegarder par exemple dans un format csv lisible par un tableur.
 
-J'ai mis à l'épreuve NuShell (pas que lui d'ailleurs mais moi aussi) pour voir si l'outil me permettait avec un niveau débutant me permettait de travailler et d'apporter un peu de valeur à mon environnement de travail.
+J'ai mis à l'épreuve NuShell (pas que lui d'ailleurs mais moi aussi) pour voir si l'outil  avec un niveau débutant me permettait de travailler et d'apporter un peu de valeur à mon environnement de travail.
 
 
-Voyons des exemples...
+Réponses dans ces lignes ...
 ## Exemple d'utilisation de NuShell pour afficher dynamiquement son calendrier
 
-L'université planifie mon travail au travers d'un calendrier au format ical, accessible via internet (pplication ADE) et nushell est capable de lire et parser un calendrier au format ical. L'idée est simple c'est afficher mon calendrier dans mon CLI via NewShell pour sélectionner des évènements , les modifier ou les extraire. 
+L'université planifie mon travail au travers d'un calendrier au format ical, accessible via internet (application ADE) et nushell est capable de lire et parser un calendrier au format ical. L'idée est simple c'est afficher mon calendrier dans mon CLI via NewShell pour sélectionner des évènements ou les extraire. 
 
 ```powershell
 /home/pouchou/ownCloud/dev/nushell〉$moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                                
@@ -47,9 +47,10 @@ select permet donc de sélectionner des colonnes.
 
 ## Voyons comment maintenant obtenir cette table: 
 
-Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas le parser directement. La présence de multi-lignes dans la description de l'évènement en est la cause et le script Python (3.10 au moins) suivant permet de générer un fichier au format ics exploitable par NuShell.
+Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas le parser directement. La présence de multi-lignes dans la description de l'évènement en est la cause et le script Python suivant permet de générer un fichier au format ics exploitable par NuShell.
 
 ```Python
+# (version Python >= 3.10 requise )
 
 fichier='./monics.ics'
 
@@ -194,7 +195,7 @@ On va extraire avec jq les données qui nous intéresse (properties) et les "pip
 On a maintenant une table avec les events de notre calendrier.
 flatten permet de supprimer un niveau et de voir les données:
 
-```powercli
+```bash
 fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
 '|from json|get properties |flatten
 ...
@@ -230,7 +231,7 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
 C'est mieux mais ce n'est toujours pas exploitable.
 Avec le "get properties" on obtient une sortie de type "list" 
 
-```powercli
+```bash
 /home/pouchou/ownCloud/dev/nushell〉fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
 '|from json|get properties |describe
 list<table<name: string, value: string, params: nothing>>
@@ -268,10 +269,10 @@ Examples:
   Iterate over each element, keeping all results
   > [1 2 3] | each --keep-empty { |it| if $it == 2 { echo "found 2!"} }
 ```
-[Un post ici] [https://stackoverflow.com/questions/73588877/expand-collapsed-data-in-nushell]
-donne la solution qui demande à recréer les colonnes à partir de la liste:
+Un post ici [https://stackoverflow.com/questions/73588877/expand-collapsed-data-in-nushell]
+donne la solution qui demande de recréer les colonnes à partir de la liste:
 
-```powercli
+```bash
 fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
 '|from json|get properties |each  {|it| {'DTSTAMP': $it.0.value,'DTSTART': $it.1.value,'DTEND':$it.2.value,'SUMMARY': $it.3.value ,'LOCAT
 ION': $it.4.value ,'DESCRIPTION':$it.5.value,'CREATED':$it.6.value,'LAST-MODIFIED':$it.7.value,'SEQUENCE':$it.8.value}}
@@ -282,7 +283,7 @@ ION': $it.4.value ,'DESCRIPTION':$it.5.value,'CREATED':$it.6.value,'LAST-MODIFIE
 │     │              │              │              │              │             │  valider    │ 14e4e454532 │             │             │
 │     │              │              │              │              │             │ POUCHOULON  │ 3032322d323 │             │             │
 │     │              │              │              │              │             │   JEAN MARC │ 032332d3130 │             │             │
-│     │              │              │              │              │             │  (Exporté   │ 343434362d3 │             │             │
+│     │              │              │              │              │             │  (Exporté   │ 343434362d3 │bash             │             │
 │     │              │              │              │              │             │ le:06/11/20 │ 02d         │             │             │
 │     │              │              │              │              │             │ 22 14:54)   │             │             │             │
 │ 323 │ 20221106T135 │ 20230417T110 │ 20230417T140 │ SECSER-TD    │ B203-CYBER  │   LPRO      │ ADE604e4f55 │ 19700101T00 │ 20221106T13 │
@@ -304,10 +305,10 @@ Toutes les colonnes ne sont pas intéressantes, la date n'est pas dans un format
 - par un tri avec l'instruction **sort-by** sur la colonne DTSTART.
 - par un cast de la date via l'instruction **datetime** (l'heure est UTC il faut donc décaler via -o +1).
 - par une ré-écriture des données de la colonne avec l'instruction **udpate**.
-- par le rejet des colonnes qui ne nous apporte rien ici.
+- par le rejet des colonnes avec l'instruction **reject** qui ne nous apporte rien ici.
 
 
-```powercli
+```bash
 fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
 '|from json|get properties|each  {|it| {'DTSTAMP': $it.0.value,'DTSTART': $it.1.value,'DTEND':$it.2.value,'SUMMARY': $it.3.value ,'LOCATI
 ON': $it.4.value ,'DESCRIPTION':$it.5.value,'CREATED':$it.6.value,'LAST-MODIFIED':$it.7.value,'SEQUENCE':$it.8.value}}| sort-by DTSTART |
@@ -483,7 +484,7 @@ ss -tunlp|jc --ss|from json|sort-by -n local_port |where ($it.local_port | into 
 Il existe un logiciel qui fournit des tonnes de données systèmes , réseaux et sécurité au format json : c'est **osquery**.
 
 
-```
+```bash
 osqueryi "select * FROM users;" --json|from json                                 11/06/2022 03:45:45
 ╭────┬────────────────────┬────────────────────┬───────┬────────────┬───────────────────┬───────┬────────────┬───────────────────┬──────╮
 │  # │    description     │     directory      │  gid  │ gid_signed │       shell       │  uid  │ uid_signed │     username      │ uuid │
@@ -514,6 +515,7 @@ osqueryi "select * FROM users;" --json|from json                                
 │ 19 │ systemd            │ /run/systemd/resol │ 103   │ 103        │ /usr/sbin/nologin │ 101   │ 101        │ systemd-resolve   │      │
 │    │ Resolver,,,        │ ve                 │       │            │                   │       │            │                   │      │
 ...
+```
 
 ```bash
 osqueryi "select * FROM docker_images;" --json|from json|update size_bytes {|it| $it.size_bytes |into
@@ -525,9 +527,9 @@ Le nombre de tables osquery est impressionnant il ya surement des possiblilité 
 
 ## conclusion ... affaire à suivre
 
-NuShell est jeune et sain. Tout n'est pas parfait  (le parsing de json est moins tolérant que celui de jq essayez avec "journalctl -o json| from json" pour vos en convaincre) mais les idées sont prometteuses. Je ne sais pas trop si il peut remplacer/suppléer un outil Python comme pandas ou  bash mais il est plus adapté à des usages modernes.
+NuShell est jeune et sain. Tout n'est pas parfait  (le parsing de json est moins tolérant que celui de jq essayez avec "journalctl -o json| from json" pour vos en convaincre) mais les idées sont prometteuses. Je ne sais pas trop si il peut remplacer/suppléer un outil Python comme pandas ou  bash mais il est adapté à des usages modernes.
 
-Je me rends compte combien json est devenu central et comme nous avons raison de le travailler en BUT réseaux & télécommunications.
+Je me rends compte combien json est devenu central et comme nous avons raison de le travailler en BUT réseaux & télécommunications...
 
 
 
