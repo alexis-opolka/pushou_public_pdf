@@ -446,7 +446,7 @@ ls ~/Téléchargements/ | where size >  500Mib                                  
 ```
 
 Mais NuShell est jeune et toutes les commandes d'un shell comme bash ne peuvent pas être ré-écrites...
-Il est donc intéressant de "nourrir" NuShell avec des données issues d'applications capable de produire des données dans un format d'échange universel comme **json**.
+Il est donc intéressant de "nourrir" NuShell avec des données issues d'applications capables de produire des données dans un format d'échange universel comme **json**.
 
 C'est le cas ici avec un autre exemple orienté réseaux (**js** transforme la sortie de commandes **bash** en **json**):
 
