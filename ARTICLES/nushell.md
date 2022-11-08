@@ -52,46 +52,42 @@ $moncal |columns                                                                
 
 ## Voyons comment maintenant obtenir cette table: 
 
-Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas parser le résultat directement. L'erreur renvoyée n'est pas "parlante". Après de nombreux essais il s'avère que c'est La présence de multi-lignes dans la description de l'évènement qui en en est la cause.
+Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas parser le résultat directement. L'erreur renvoyée n'est pas "parlante". Après de nombreux essais il s'avère que c'est La présence de multi-lignes dans la description de l'évènement qui en en est la cause. 
 Le script Python suivant permet de générer un fichier au format ics exploitable par NuShell.
 
 ```Python
-# (version Python >= 3.10 requise )
+# (installation du module icalendar requise )
 
-fichier: str ='./monics.ics'
+from icalendar import Calendar, Event, vCalAddress, vText
+from datetime import datetime, date
+from pathlib import Path
+import os
+import pytz
 
-with open(fichier) as f:
 
-    def nettoieLigne(line: str,next_intitule str) -> str:
-        next_line = next(f)
-        if next_intitule == 'CREATED':
-            next_line = next(f)
-
-        while not next_line.startswith(next_intitule):
-            line = line + next_line.strip()
-            next_line = next(f)
-        else:
-            line = line.replace("\\n",'').rstrip()
-            print(line.rstrip())
-        return(next_line)
-
-    for line in f:
-        line = line.replace("\\n",' ').rstrip()
-        if line == '': continue
-        intitule = line.split(':')[0]
-        match intitule:
-          case 'DESCRIPTION':
-            next_line=nettoieLigne(line,'UID')
-            next_line=nettoieLigne(next_line,'CREATED')
-            print(next_line.replace("\\n",'').rstrip())
-          case 'LOCATION':
-              if  not line.split(':')[1] :
-                  print('LOCATION:iut')
-              else:
-                  print(line)
-          case default:
-                  print(line)
-
+with open('./monics.ics', 'rb') as e:
+        print("""BEGIN:VCALENDAR
+        METHOD:REQUEST
+        PRODID:-//ADE/version 6.0
+        VERSION:2.0
+        CALSCALE:GREGORIAN""")
+        ecal = Calendar.from_ical(e.read())
+        for component in ecal.walk():
+           if component.name == "VEVENT":
+               print('BEGIN:VEVENT')
+               print('DTSTAMP:' + component.get("DTSTAMP").to_ical().decode('utf-8'))
+               print('DTSTART:' + component.get("DTSTART").to_ical().decode('utf-8'))
+               print('DTEND:' + component.get("DTEND").to_ical().decode('utf-8'))
+               print('SUMMARY:' + component.get("SUMMARY"))
+               print('LOCATION:' + component.get("LOCATION"))
+               print('DESCRIPTION:' + component.get("DESCRIPTION").replace('\n','').strip())
+               print('UID:' + component.get("UID"))
+               print('CREATED:'+ component.get("CREATED").to_ical().decode('utf-8'))
+               print('LAST-MODIFIED:' + component.get("LAST-MODIFIED").to_ical().decode('utf-8'))
+               print('SEQUENCE:' + repr(component.decoded("SEQUENCE")))
+               print('END:VEVENT')
+        e.close()
+print('END:VCALENDAR')
 ```
 
 Recommençons:
