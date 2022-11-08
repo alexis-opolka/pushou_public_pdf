@@ -86,8 +86,7 @@ with open('./monics.ics', 'rb') as e:
                print('LAST-MODIFIED:' + component.get("LAST-MODIFIED").to_ical().decode('utf-8'))
                print('SEQUENCE:' + repr(component.decoded("SEQUENCE")))
                print('END:VEVENT')
-        e.close()
-print('END:VCALENDAR')
+        print('END:VCALENDAR')
 ```
 
 Recommençons:
