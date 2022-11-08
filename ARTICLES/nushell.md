@@ -80,7 +80,7 @@ with open('./monics.ics', 'rb') as e:
                print('DTEND:' + component.get("DTEND").to_ical().decode('utf-8'))
                print('SUMMARY:' + component.get("SUMMARY"))
                print('LOCATION:' + component.get("LOCATION"))
-               print('DESCRIPTION:' + component.get("DESCRIPTION").replace('\n','').strip())
+               print('DESCRIPTION:' + component.get("DESCRIPTION").replace('\n',' ').strip())
                print('UID:' + component.get("UID"))
                print('CREATED:'+ component.get("CREATED").to_ical().decode('utf-8'))
                print('LAST-MODIFIED:' + component.get("LAST-MODIFIED").to_ical().decode('utf-8'))
