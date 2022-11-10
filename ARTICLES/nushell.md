@@ -418,6 +418,85 @@ Un export est aisé:
 $moncal|to csv
 ```
 
+Le format de date n'est pas satisfaisant. Malheureusement je n'ai pas réussi via l'instruction "into timezone -o +2" à obtenir  une date à l'heure.
+J'ai modifié le script Python afn d'enlever les informations relatives à la TimeZone:
+
+```Python
+
+from icalendar import Calendar, Event, vCalAddress, vText
+from datetime import datetime, date
+from pathlib import Path
+import sys
+import os
+import pytz
+
+FICHIER = sys.argv[1]
+#FICHIER = 'monics.ics'
+
+
+
+with open(FICHIER, 'rb') as e:
+
+        def enleve_tz(champ):
+            """ PARAM: calendar  date:heure enlève la TimeZone' """
+            print(champ + ':' +  str(component.get(champ).dt.replace(tzinfo=None).timestamp()).split('.')[0])
+
+        print("""BEGIN:VCALENDAR
+        METHOD:REQUEST
+        PRODID:-//ADE/version 6.0
+        VERSION:2.0
+        CALSCALE:GREGORIAN""")
+        ecal = Calendar.from_ical(e.read())
+        for component in ecal.walk():
+           if component.name == "VEVENT":
+               print('BEGIN:VEVENT')
+               enleve_tz('DTSTAMP')
+               enleve_tz('DTSTART')
+               enleve_tz('DTEND')
+               print('SUMMARY:' + component.get("SUMMARY"))
+               print('LOCATION:' + component.get("LOCATION"))
+               print('DESCRIPTION:' + component.get("DESCRIPTION").replace('\n',' ').strip())
+               print('UID:' + component.get("UID"))
+               enleve_tz('CREATED')
+               enleve_tz('LAST-MODIFIED')
+               print('SEQUENCE:' + repr(component.decoded("SEQUENCE")))
+               print('END:VEVENT')
+        print('END:VCALENDAR')
+```
+
+J'ai bien réussi à obtenir la bonne heure à condition de me mettre à UTC + 4 au lieu de UTC +2... un bidouillage infâme convenons en mais le résultat est celui attendu.
+
+```dotnetcli
+#!/usr/bin/env nu
+let urlcal = 'https://proseconsult.umontpellier.fr/jsp/custom/modules/plannings/direct_cal.jsp?data=....'
+
+let fichier = 'monics.ics'
+let moncal = (fetch $urlcal|save $fichier |python nettoieics_nushell.py $fichier|save monics2.ics|open monics2.ics|select events|to json |jq  '.[][]'|from json|get properties|each  {|it| {'DTSTAMP': $it.0.value,'DTSTART': $it.1.value,'DTEND':$it.2.value,'SUMMARY': $it.3.value ,'LOCATION': $it.4.value ,'DESCRIPTION':$it.5.value,'CREATED':$it.6.value,'LAST-MODIFIED':$it.7.value,'SEQUENCE':$it.8.value}}| sort-by DTSTART |update DTSTAMP {|it| $it.DTSTAMP|into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'} |update DTSTART {|it| $it.DTSTART|into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'}|update DTEND {|it| $it.DTEND|into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'}|reject DTSTAMP CREATED LAST-MODIFIED SEQUENCE)
+#$moncal|where SUMMARY =~ SAE|first 5
+$moncal
+```
+```bash
+$moncal |where 'SUMMARY' =~ "202"  |where 'SUMMARY' =~ "TP"                                                                                                                                                                  11/11/2022 12:21:03
+╭────┬───────────────────────┬───────────────────────┬─────────────────────────┬────────────┬────────────────────────────────────────────────────────────────────────╮
+│  # │        DTSTART        │         DTEND         │         SUMMARY         │  LOCATION  │                              DESCRIPTION                               │
+├────┼───────────────────────┼───────────────────────┼─────────────────────────┼────────────┼────────────────────────────────────────────────────────────────────────┤
+│  0 │ Le 21/04/2023 à 09:30 │ Le 21/04/2023 à 12:15 │ R202 Admin Système-TPB2 │ C214       │ RT-TPB2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  1 │ Le 21/04/2023 à 15:30 │ Le 21/04/2023 à 18:15 │ R202 Admin Système-TPA2 │ C214       │ RT-TPA2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  2 │ Le 02/05/2023 à 09:30 │ Le 02/05/2023 à 12:15 │ R202 Admin Système-TPA1 │ C213       │ RT-TPA1 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  3 │ Le 02/05/2023 à 15:30 │ Le 02/05/2023 à 18:15 │ R202 Admin Système-TPB1 │ C213       │ RT-TPB1 A valider POUCHOULON   JEAN MARC (Exporté le:11/11/2022 00:13) │
+│  4 │ Le 09/05/2023 à 08:00 │ Le 09/05/2023 à 10:45 │ R202 Admin Système-TPB2 │ B203-CYBER │ RT-TPB2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  5 │ Le 12/05/2023 à 15:30 │ Le 12/05/2023 à 18:15 │ R202 Admin Système-TPA2 │ C214       │ RT-TPA2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  6 │ Le 26/05/2023 à 09:30 │ Le 26/05/2023 à 12:15 │ R202 Admin Système-TPB2 │ C214       │ RT-TPB2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  7 │ Le 26/05/2023 à 15:30 │ Le 26/05/2023 à 18:15 │ R202 Admin Système-TPA2 │ C214       │ RT-TPA2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  8 │ Le 02/06/2023 à 09:30 │ Le 02/06/2023 à 12:15 │ R202 Admin Système-TPB2 │ C214       │ RT-TPB2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│  9 │ Le 02/06/2023 à 15:30 │ Le 02/06/2023 à 18:15 │ R202 Admin Système-TPA2 │ C214       │ RT-TPA2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│ 10 │ Le 09/06/2023 à 09:30 │ Le 09/06/2023 à 12:15 │ R202 Admin Système-TPB2 │ C214       │ RT-TPB2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+│ 11 │ Le 09/06/2023 à 14:00 │ Le 09/06/2023 à 16:45 │ R202 Admin Système-TPA2 │ C214       │ RT-TPA2 POUCHOULON   JEAN MARC A valider (Exporté le:11/11/2022 00:13) │
+╰────┴───────────────────────┴───────────────────────┴─────────────────────────┴────────────┴────────────────────────────────────────────────────────────────────────╯
+```
+
+
+
 Un point pour NuShell (et pour moi aussi car ce fût pas si simple) ! 
 
 On va maintenant voir comment avec NuShell on peut interagir avec les données de notre OS Linux.
