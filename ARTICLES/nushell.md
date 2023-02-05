@@ -10,7 +10,7 @@ NewShell ne se contente pas d'être un shell pour Linux, MacOs et Windows mais i
 - Les formats d'échanges comme json permettent à NuShell de communiquer avec de nombreux outils.
 - La lecture et l'écriture de fichiers dans des formats usuels (csv, json, odt...) fait de NuShell un outil pivot pour traiter des données.
 
-J'ai mis à l'épreuve NuShell (en fait c'est surtout moi qui suit à l'épreuve de sortir de Python) pour voir si l'outil avec mon niveau débutant me permettait de travailler et d'apporter un peu de valeur à mon environnement de travail.
+J'ai mis à l'épreuve NuShell (en fait c'est surtout moi qui suis à l'épreuve de sortir de Python) pour voir si l'outil avec mon niveau débutant me permettait de travailler et d'apporter un peu de valeur à mon environnement de travail.
 
 Réponses dans ces lignes ...
 
@@ -18,9 +18,9 @@ Réponses dans ces lignes ...
 
 L'université planifie mon travail au travers d'un calendrier au format ical, accessible via une URL au travers de l'application ADE. NuShell est capable de parser un calendrier au format ical. 
 
-L'idée est simple:  c'est d'afficher mon calendrier dans mon CLI via NewShell pour sélectionner des évènements ou les extraire. 
+L'idée est simple :  c'est d'afficher mon calendrier dans mon CLI via NewShell pour sélectionner des évènements ou les extraire. 
 
-Le résultat à obtenir est le suivant (je le reconnais je triche...):
+Le résultat à obtenir est le suivant (je le reconnais je triche...) :
 
 ```bash
 $moncal|where SUMMARY =~ SAE|first 5                                                                                                                                                                                               
@@ -52,7 +52,7 @@ $moncal |columns                                                                
 
 ## Voyons comment maintenant obtenir cette table: 
 
-Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas parser le résultat directement. L'erreur renvoyée n'est pas "parlante". Après de nombreux essais il s'avère que c'est La présence de multi-lignes dans la description de l'évènement qui en en est la cause. 
+Je peux récupérer directement le fichier au format ics sur l'application ADE de l'université via la commande fetch mais NewShell n'arrive pas parser le résultat directement. L'erreur renvoyée n'est pas "parlante". Après de nombreux essais, il s'avère que c'est La présence de multi-lignes dans la description de l'évènement qui est la cause. 
 Le script Python suivant permet de générer un fichier au format ics exploitable par NuShell.
 
 ```Python
@@ -89,7 +89,7 @@ with open('./monics.ics', 'rb') as e:
         print('END:VCALENDAR')
 ```
 
-Recommençons:
+Recommençons :
 
 ```shell
 let urlcal = 'http://....' # mettre l'url fournie par ADE ici
@@ -101,7 +101,7 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics             
 ╰───┴────────────────┴──────────────────┴────────────────┴────────────────┴────────────────┴────────────────┴────────────────╯
 ```
 
-Cette fois ci le chargement des données a bien été effectué, c'est la colonne **events** qui nous intéresse.
+Cette fois-ci le chargement des données a bien été effectué, c'est la colonne **events** qui nous intéresse.
 Déception ! L'instruction "**table --expand**" ne permet pas de voir ce qu'elle contient.
 
 ```shell
@@ -111,7 +111,7 @@ Déception ! L'instruction "**table --expand**" ne permet pas de voir ce qu'elle
 ╰───┴─────╯
 ```
 
-Une sortie au format json nous renseigne un peu mieux:
+Une sortie au format json nous renseigne un peu mieux :
 
 ```bash
 fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json|jq
@@ -175,9 +175,9 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
       }
 ```
 
-C'est probablement l'encapsulation dans des arrays json qui ne nous permet pas une lecture directe.
+C'est probablement l'encapsulation dans des "arrays json" qui ne nous permet pas une lecture directe.
 
-On va extraire avec jq les données qui nous intéresse (properties) et les "piper" vers NuShell:
+On va extraire avec jq les données qui nous intéressent (properties) et les "piper" vers NuShell:
 
 ```bash
 fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
@@ -201,7 +201,7 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
 ╰─────┴─────────────────┴────────────────╯
 ```
 On a maintenant une table avec les **events** de notre calendrier.
-L'instruction **flatten** permet de supprimer un "niveau" et de voir les données:
+L'instruction **flatten** permet de supprimer un "niveau" et de voir les données :
 
 ```bash
 fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select events|to json |jq  '.[][]
@@ -236,7 +236,7 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
 │   # │     name      │                                                 value                                                  │ params │
 ╰─────┴───────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────┴────────
 ```
-C'est mieux mais ce n'est toujours pas exploitable.
+C'est mieux, mais ce n'est toujours pas exploitable.
 Avec le "**get properties**" on obtient une sortie de type "**list**". Cette information est obtenue à l'aide de l'instruction **describe** qui se révèle très utile. 
 
 ```bash
@@ -245,7 +245,7 @@ fetch $urlcal|save monics.ics|python nettoieics_nushell.py|from ics|select event
 list<table<name: string, value: string, params: nothing>>
 ```
 
-Un coup d'oeil à la documentation nous indique la voie à suivre:
+Un coup d'oeil à la documentation nous indique la voie à suivre :
 
 ```bash
 help each                                                                        11/06/2022 02:48:55
@@ -363,7 +363,7 @@ ND {|it| $it.DTEND|into datetime -o +1  |to text}|reject DTSTAMP CREATED LAST-MO
 ```
 
 On y est !
-Le mode "one liner" c'est bien mais créer un script NuShell est peut être judicieux:
+Le mode "one liner" c'est bien, mais créer un script NuShell est sûrement judicieux :
 
 ```bash
 #!/usr/bin/env nu
@@ -412,7 +412,7 @@ source calendar.nu
 /home/pouchou/ownCloud/dev/nu
 ```
 
-Un export est aisé:
+Un export est aisé :
 
 ```bash
 $moncal|to csv
@@ -464,7 +464,7 @@ with open(FICHIER, 'rb') as e:
         print('END:VCALENDAR')
 ```
 
-J'ai bien réussi à obtenir la bonne heure à condition de me mettre à UTC + 4 au lieu de UTC +2... un bidouillage infâme convenons en mais le résultat est celui attendu.
+J'ai bien réussi à obtenir la bonne heure à condition de me mettre à UTC + 4 au lieu de UTC +2... un bidouillage infâme convenons-en, mais le résultat est celui attendu.
 
 ```dotnetcli
 #!/usr/bin/env nu
@@ -495,11 +495,56 @@ $moncal |where 'SUMMARY' =~ "202"  |where 'SUMMARY' =~ "TP"                     
 ╰────┴───────────────────────┴───────────────────────┴─────────────────────────┴────────────┴────────────────────────────────────────────────────────────────────────╯
 ```
 
+Il reste maintenant à calculer le nombre d'heures à partir de DTSTART et de DTEND. On ajoute une nouvelle colonne TEMPS. On somme la colonne des heures avec "math sum" dont la valeur est "castée" via "into duration" en heures.
 
+```bash
+let moncal =  (fetch $urlcal|save -f $fichier |python nettoieics_nushell.py $fichier|save -f monics2.ics|open monics2.ics|select events|to json |jq  '.[][]'|from json|get proper
+ties|each  {|it| {'DTSTAMP': $it.0.value,'DTSTART': $it.1.value,'DTEND':$it.2.value,'SUMMARY': $it.3.value ,'LOCATION': $it.4.value ,'DESCRIPTION':$it.5.value,'CREATED':$it.6.va
+lue,'LAST-MODIFIED':$it.7.value,'SEQUENCE':$it.8.value}}| sort-by DTSTART |insert TEMPS {|it| ($it.DTEND|into datetime) - ($it.DTSTART|into datetime)}|move TEMPS --after DTEND|
+update DTSTAMP {|it| $it.DTSTAMP|into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'} |update DTSTART {|it| $it.DTSTART|into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'}|
+update DTEND {|it| $it.DTEND|into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'}|reject DTSTAMP CREATED LAST-MODIFIED SEQUENCE )
 
-Un point pour NuShell (et pour moi aussi car ce fût pas si simple) ! 
+let all_hours = ($moncal|get TEMPS|math sum|into duration --convert hr)
+# heures de présence mais pas de cours
+let effective_cal =  ($moncal |where 'SUMMARY' !~ "Soutenances" | where 'SUMMARY' !~ "RENTREE")
+# heures d'enseignements
+let heures_enseignements = ($effective_cal|get TEMPS|math sum|into duration --convert hr)
+let heures_cm = ($effective_cal|where SUMMARY =~ "CM" | get TEMPS|math sum|into duration --convert hr)
+let heures_td = ($effective_cal|where SUMMARY =~ "TD" | get TEMPS|math sum|into duration --convert hr)
+let heures_tp = ($effective_cal|where SUMMARY =~ "TP" | get TEMPS|math sum|into duration --convert hr)
+let heures_sae = ($effective_cal|where SUMMARY =~ "SAE" | get TEMPS|math sum|into duration --convert hr)
+let heures_devcloud = ($effective_cal|where DESCRIPTION =~ "DEVCLOUD" |get TEMPS|math sum|into duration --convert hr)
+print -n "toutes les heures:" $all_hours
+print "  "
+print -n "heures enseignements:" $heures_enseignements
+print "  "
+print -n "heures CM:" $heures_cm
+print "  "
+print -n "heures TD:" $heures_td
+print "  "
+print -n "heures TP:" $heures_tp
+print "  "
+print -n "heures SAE:" $heures_sae
+print "  "
+print -n "heures devcloud:" $heures_devcloud
+```
+
+Le rendu est le suivant (je vous laisse imaginer les heures faites...)
+
+```bash
+toutes les heures:xxx hr
+heures enseignements:xxx.5000 hr
+heures CM:xxx.7500 hr
+heures TD:xxx.7500 hr
+heures TP:xxx hr
+heures SAE:xxx hr
+heures devcloud:xxx.5000 hr%
+```
+
+Un point pour NuShell et pour moi aussi (Ce ne fût pas si simple !).
 
 On va maintenant voir comment avec NuShell on peut interagir avec les données de notre OS Linux.
+
 ## NuShell pour extraire des données systèmes et réseau de mon hôte
 
 NuShell dispose de primitives pour extraire des données de l'OS sous-jacent.
@@ -520,7 +565,7 @@ ls ~/Téléchargements/ | where size >  500Mib                                  
 ```
 
 Mais NuShell est jeune et toutes les commandes d'un shell comme bash ne peuvent pas être ré-écrites...
-Il est donc intéressant de "nourrir" NuShell avec des données issues d'applications capables de produire des données dans un format d'échange universel comme **json**.
+Il est donc intéressant de "nourrir" NuShell avec des données issues d'applications capables d'exporter dans un format d'échange universel comme **json**.
 
 C'est le cas ici avec un autre exemple orienté réseaux (**js** transforme la sortie de commandes **bash** en **json**):
 
@@ -618,7 +663,52 @@ osqueryi "select * FROM docker_images;" --json|from json|update size_bytes {|it|
 62.9 GiB
 ```
 
-Le nombre de tables osquery est impressionnant il y a surement des possiblilité intéressantes (un jour je regarderais les "yara rules"...).
+Le nombre de tables osquery est impressionnant il y a surement des possibilités intéressantes (un jour... je regarderais les "yara rules"...).
+
+
+### systemd & journalctl permette un export en json
+
+On peut ainsi afficher des informations :
+
+```bash
+systemctl list-unit-files --type=service -o json|from json
+
+ ─────┬────────────────────────────────────────────┬─────────────────┬───────────────╮
+│   # │                 unit_file                  │      state      │ vendor_preset │
+├─────┼────────────────────────────────────────────┼─────────────────┼───────────────┤
+│   0 │ accounts-daemon.service                    │ enabled         │ enabled       │
+│   1 │ acpid.service                              │ disabled        │ enabled       │
+│   2 │ alsa-restore.service                       │ static          │               │
+│   3 │ alsa-state.service                         │ static          │               │
+│   4 │ alsa-utils.service                         │ masked          │ enabled       │
+│   5 │ anacron.service                            │ enabled         │ enabled       │
+│   6 │ anydesk.service                            │ disabled        │ enabled       │
+│   7 │ apache-htcacheclean.service                │ disabled        │ enabled       │
+│   8 │ apache-htcacheclean@.service               │ disabled        │ enabled       │
+│   9 │ apache2.service                            │ masked          │ enabled       │
+│  10 │ apache2@.service                           │ disabled        │ enabled       │
+│  11 │ apparmor.service                           │ disabled        │ enabled       │
+```
+
+
+```bash
+journalctl -b -o json |jq '. | select(._COMM=="sensors")'  |jq -s '.'|from json| default 'nosyslog'  SYSLOG_IDENTIFIER | update __MONOTONIC_TIMESTAMP {|it| $it.__MONOTONIC_TIMESTAMP |into datetime -o +4|date format 'Le %d/%m/%Y à %H:%M'} |  default 'nomess' MESSAGE| select  __MONOTONIC_TIMESTAMP  MESSAGE
+
+╭────┬───────────────────────┬────────────────────────────────────────────────────────────╮
+│  # │ __MONOTONIC_TIMESTAMP │                          MESSAGE                           │
+├────┼───────────────────────┼────────────────────────────────────────────────────────────┤
+│  0 │ Le 25/05/1970 à 00:36 │ coretemp-isa-0000                                          │
+│  1 │ Le 25/05/1970 à 00:36 │ Adapter: ISA adapter                                       │
+│  2 │ Le 25/05/1970 à 00:36 │ Package id 0:  +49.0°C  (high = +100.0°C, crit = +100.0°C) │
+│  3 │ Le 25/05/1970 à 00:36 │ Core 0:        +49.0°C  (high = +100.0°C, crit = +100.0°C) │
+│  4 │ Le 25/05/1970 à 00:36 │ Core 1:        +45.0°C  (high = +100.0°C, crit = +100.0°C) │
+│  5 │ Le 25/05/1970 à 00:36 │ Core 2:        +43.0°C  (high = +100.0°C, crit = +100.0°C) │
+│  6 │ Le 25/05/1970 à 00:36 │ Core 3:        +43.0°C  (high = +100.0°C, crit = +100.0°C) │
+│  7 │ Le 25/05/1970 à 00:36 │ pch_skylake-virtual-0                                      │
+│  8 │ Le 25/05/1970 à 00:36 │ Adapter: Virtual device                                    │
+
+```
+
 
 ## Conclusion : affaire à suivre
 
